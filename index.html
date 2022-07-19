@@ -1,1 +1,126 @@
-Hello World
+<!DOCTYPE html>
+<html lang="en">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>CO2 Emissions by Country</title>
+        <style>
+            html, body {
+                overflow-x: hidden; 
+                max-width: 100%;
+            }
+
+            div.tooltip {
+                position: absolute;
+                text-align: center;
+                width: auto;
+                height: auto;
+                padding: 2px;
+                font: 12px sans-serif;
+                background: rgb(148, 189, 213);
+                border: 0px;
+                border-radius: 8px;
+                pointer-events: none;
+            }
+        </style>
+    </head>
+    <body>
+        <p>
+            Data collected from <i>CO2 emissions country wise with income group </i> 
+            on <a href="https://www.kaggle.com/datasets/azizulhakim98/c02-emissions-country-wise-with-income-group?select=Country+wise+CO2+emissions+.csv">Kaggle</a>.
+            Created with <a href="https://d3js.org">D3.js</a>.
+            Visualizations by Arely. Referenced <a href="https://d3-graph-gallery.com/graph/connectedscatter_select.html">D3.js Graph Gallery</a>, 
+            <a href="https://bl.ocks.org/d3noob/97e51c5be17291f79a27705cef827da2">bl.ocks</a>
+        </p>
+        <h2 align="center">CO2 Emissions in <span id="year"></span> (tons per capita)</h2>
+        <select id="selectButton"></select>
+        <svg width=400 height=400 onload="init()"></svg>
+        <script>
+            async function init() {
+                let currentYear = 1960;
+                document.getElementById("year").innerHTML = currentYear;
+                // parse data from csv file
+                data = await d3.csv("https://raw.githubusercontent.com/arelyalc/arelyalc.github.io/master/Country%20CO2%20emissions.csv");
+                console.log(data);
+
+                // List of groups
+                var allGroup = [currentYear, "1961", "1962"]
+
+                // add the options to the button
+                d3.select("#selectButton")
+                    .selectAll('myOptions').data(allGroup)
+                    .enter().append('option')
+                    .text(function (d) { return d; }) // text showed in the menu
+                    .attr("value", function (d) { return d; }); // corresponding value returned by the button
+
+                var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 1);
+
+                // set margins
+                const margin = {top: 10, right: 40, bottom: 70, left: 40},
+                    width = 1400 - margin.left - margin.right,
+                    height = 600 - margin.top - margin.bottom;
+                const svg = d3.select("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+                // set the x axis
+                const x = d3.scaleBand()
+                    .range([ 0, width ])
+                    .domain(data.map(d => d['Country Name']))
+                    .padding(0.2);
+                svg.append("g")
+                    .attr("transform", `translate(0,${height})`)
+                    .call(d3.axisBottom(x))
+                    .selectAll("text")
+                        .attr("transform", "translate(-10,0)rotate(-90)")
+                        .style("font-size",5)
+                        .style("text-anchor", "end");
+
+                // set the y axis
+                const y = d3.scaleLinear().domain([0, 250]).range([ height, 0]);
+                svg.append("g").call(d3.axisLeft(y));
+                
+                const line = svg.append('g').append("path").datum(data)
+                    .attr("d", d3.line().x(d => x(d['Country Name'])).y(d => y(+d[currentYear])))
+                    .attr("stroke", "black").style("stroke-width", 4).style("fill", "none")
+
+                var dataFilter = data.map(function(d){return {country: d['Country Name'], value: d[currentYear]} })
+                const dot = svg.selectAll('circle').data(dataFilter).join('circle')
+                    .attr("cx", d => x(d.country)).attr("cy", d => y(+d.value))
+                    .attr("r", 3).attr("stroke", "#69b3a2").attr("stroke-width", 3).attr("fill", "white")
+                    .on("mouseover", function(event,d) {
+                        div.transition().duration(200).style("opacity", .9);
+                        div.html('<h2>' + d.country + "</h2>" 
+                            + "<h3> Emissions: " + d.value + "</h3>")
+                            .style("left", (event.pageX) + "px")
+                            .style("top", (event.pageY - 50) + "px");
+                        })
+                    .on("mouseout", function(d) {
+                        div.transition().duration(500).style("opacity", 0);
+                    });
+
+                // function to update line chart based on year
+                function update(selectedGroup) {
+                    var dataFilter = data.map(function(d){return {country: d['Country Name'], value: d[selectedGroup]} })
+                    currentYear = selectedGroup;
+                    document.getElementById("year").innerHTML = currentYear;
+                    line.datum(dataFilter).transition().duration(10)
+                        .attr("d", d3.line().x(function(d) { return x(d.country) }).y(function(d) { return y(+d.value) }))
+                    dot.data(dataFilter).transition().duration(10)
+                        .attr("cx", function(d) { return x(d.country) }).attr("cy", function(d) { return y(+d.value) })
+
+                }
+
+                // When the year selected is changed, run the updateChart function
+                d3.select("#selectButton").on("change", function(d) {
+                    // recover the option that has been chosen
+                    var selectedOption = d3.select(this).property("value")
+                    // run the updateChart function with this selected option
+                    update(selectedOption)
+                })
+            }
+        </script>
+    </body>
+</html>
