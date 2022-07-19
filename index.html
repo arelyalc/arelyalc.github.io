@@ -5,6 +5,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>CO2 Emissions by Country</title>
+        
         <style>
             html, body {
                 overflow-x: hidden; 
@@ -28,32 +29,24 @@
     <body>
         <p>
             Data collected from <i>CO2 emissions country wise with income group </i> 
-            on <a href="https://www.kaggle.com/datasets/azizulhakim98/c02-emissions-country-wise-with-income-group?select=Country+wise+CO2+emissions+.csv">Kaggle</a>.
-            Created with <a href="https://d3js.org">D3.js</a>.
-            Visualizations by Arely. Referenced <a href="https://d3-graph-gallery.com/graph/connectedscatter_select.html">D3.js Graph Gallery</a>, 
-            <a href="https://bl.ocks.org/d3noob/97e51c5be17291f79a27705cef827da2">bl.ocks</a>
+            on <a target="_blank" href="https://www.kaggle.com/datasets/azizulhakim98/c02-emissions-country-wise-with-income-group?select=Country+wise+CO2+emissions+.csv">Kaggle</a>.
+            Created with <a target="_blank" href="https://d3js.org">D3.js</a>.
+            Visualizations by Arely. Referenced <a target="_blank" href="https://d3-graph-gallery.com/graph/connectedscatter_select.html">D3.js Graph Gallery</a>, 
+            <a target="_blank" href="https://bl.ocks.org/d3noob/97e51c5be17291f79a27705cef827da2">bl.ocks (tooltip)</a>, and
+            <a target="_blank" href="https://bl.ocks.org/martinjc/f621fbc6a5b795bf01f4c0be0bee5093">b.locks (slider)</a>
         </p>
         <h2 align="center">CO2 Emissions in <span id="year"></span> (tons per capita)</h2>
-        <select id="selectButton"></select>
+        <label for="year">Please select a year: </label>
+        <input type="range" min=1960 max=2018 step=1 id="year-slider" value=2014 oninput="selected_year.value = year.value">
+        <span id="selected_year"></span> 
         <svg width=400 height=400 onload="init()"></svg>
         <script>
             async function init() {
-                let currentYear = 1960;
+                let currentYear = 1990;
                 document.getElementById("year").innerHTML = currentYear;
+                document.getElementById("selected_year").innerHTML = currentYear;
                 // parse data from csv file
                 data = await d3.csv("https://raw.githubusercontent.com/arelyalc/arelyalc.github.io/master/Country%20CO2%20emissions.csv");
-                console.log(data);
-
-                // List of groups
-                var allGroup = [currentYear, "1961", "1962"]
-
-                // add the options to the button
-                d3.select("#selectButton")
-                    .selectAll('myOptions').data(allGroup)
-                    .enter().append('option')
-                    .text(function (d) { return d; }) // text showed in the menu
-                    .attr("value", function (d) { return d; }); // corresponding value returned by the button
-
                 var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 1);
 
                 // set margins
@@ -82,11 +75,13 @@
                 const y = d3.scaleLinear().domain([0, 250]).range([ height, 0]);
                 svg.append("g").call(d3.axisLeft(y));
                 
+                // define line + styling
                 const line = svg.append('g').append("path").datum(data)
                     .attr("d", d3.line().x(d => x(d['Country Name'])).y(d => y(+d[currentYear])))
                     .attr("stroke", "black").style("stroke-width", 4).style("fill", "none")
-
                 var dataFilter = data.map(function(d){return {country: d['Country Name'], value: d[currentYear]} })
+                
+                // define dots (data points) for a particular year
                 const dot = svg.selectAll('circle').data(dataFilter).join('circle')
                     .attr("cx", d => x(d.country)).attr("cy", d => y(+d.value))
                     .attr("r", 3).attr("stroke", "#69b3a2").attr("stroke-width", 3).attr("fill", "white")
@@ -106,6 +101,7 @@
                     var dataFilter = data.map(function(d){return {country: d['Country Name'], value: d[selectedGroup]} })
                     currentYear = selectedGroup;
                     document.getElementById("year").innerHTML = currentYear;
+                    document.getElementById("selected_year").innerHTML = currentYear;
                     line.datum(dataFilter).transition().duration(10)
                         .attr("d", d3.line().x(function(d) { return x(d.country) }).y(function(d) { return y(+d.value) }))
                     dot.data(dataFilter).transition().duration(10)
@@ -113,13 +109,11 @@
 
                 }
 
-                // When the year selected is changed, run the updateChart function
-                d3.select("#selectButton").on("change", function(d) {
-                    // recover the option that has been chosen
+                // once slider moves, update according to year
+                d3.select('#year-slider').on('change', function(d) {
                     var selectedOption = d3.select(this).property("value")
-                    // run the updateChart function with this selected option
-                    update(selectedOption)
-                })
+                    update(selectedOption);
+                });
             }
         </script>
     </body>
