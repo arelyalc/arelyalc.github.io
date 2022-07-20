@@ -5,14 +5,12 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>CO2 Emissions by Country</title>
-        
         <style>
             html {
                 overflow-x: hidden; 
                 max-width: 100%;
                 padding: 10px;
             }
-
             div.tooltip {
                 position: absolute;
                 text-align: center;
@@ -25,11 +23,9 @@
                 border-radius: 8px;
                 pointer-events: none;
             }
-
             #year-slider {
                 width:500px;
             }
-
             #play-button {
                 position: absolute;
                 background: #d080f0;
@@ -42,15 +38,12 @@
                 height: 30px;
                 margin-top:10px;
             }
-
             #play-button:hover {
                 background-color: #4b14d8;
             }   
-
             .graph {
                 padding-top:25px;
             }
-
             .header-annotations {
                 color: gray;
                 font-size: 15px;
@@ -115,13 +108,14 @@
                 // define line + styling
                 const line = svg.append('g').append("path").datum(data)
                     .attr("d", d3.line().x(d => x(d['Country Name'])).y(d => y(+d[currentYear])))
-                    .attr("stroke", "black").style("stroke-width", 4).style("fill", "none")
+                    .attr("stroke", "#d080f0").style("stroke-width", 4).style("fill", "none")
                 var dataFilter = data.map(function(d){return {country: d['Country Name'], value: d[currentYear]} })
                 
                 // define dots (data points) for a particular year
                 const dot = svg.selectAll('circle').data(dataFilter).join('circle')
                     .attr("cx", d => x(d.country)).attr("cy", d => y(+d.value))
-                    .attr("r", 3).attr("fill", "#69b3a2")
+                    .attr("r", 2.5).attr("fill", "darkblue")
+                    .style("cursor", "pointer")
                     .on("mouseover", function(event,d) {
                         div.transition().duration(200).style("opacity", .9);
                         div.html('<h2>' + d.country + "</h2>" 
@@ -157,7 +151,6 @@
                     if (button.text() == "Pause") {
                         moving = false;
                         clearInterval(timer);
-                        // timer = 0;
                         button.text("Play");
                     } else {
                         moving = true;
@@ -167,7 +160,6 @@
                 })
 
                 let playButton = d3.select("#play-button");
-
                 function step() {
                     update(currentYear);
                     document.getElementById("year-slider").value = currentYear;
