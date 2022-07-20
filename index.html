@@ -7,9 +7,10 @@
         <title>CO2 Emissions by Country</title>
         
         <style>
-            html, body {
+            html {
                 overflow-x: hidden; 
                 max-width: 100%;
+                padding: 10px;
             }
 
             div.tooltip {
@@ -24,25 +25,61 @@
                 border-radius: 8px;
                 pointer-events: none;
             }
-        </style>
+
+            #year-slider {
+                width:500px;
+            }
+
+            #play-button {
+                position: absolute;
+                background: #d080f0;
+                border-radius: 3px;
+                border: none;
+                color: white;
+                margin: 0;
+                width: 60px;
+                cursor: pointer;
+                height: 30px;
+                margin-top:10px;
+            }
+
+            #play-button:hover {
+                background-color: #4b14d8;
+            }   
+
+            .graph {
+                padding-top:25px;
+            }
+
+            .header-annotations {
+                color: gray;
+                font-size: 15px;
+                line-height: 15px;
+            }
+         </style>
     </head>
     <body>
-        <p>
-            Data collected from <i>CO2 emissions country wise with income group </i> 
+        <p class="header-annotations">
+            Data collected from <i>CO<sub>2</sub> emissions country wise with income group </i> 
             on <a target="_blank" href="https://www.kaggle.com/datasets/azizulhakim98/c02-emissions-country-wise-with-income-group?select=Country+wise+CO2+emissions+.csv">Kaggle</a>.
             Created with <a target="_blank" href="https://d3js.org">D3.js</a>.
-            Visualizations by Arely. Referenced <a target="_blank" href="https://d3-graph-gallery.com/graph/connectedscatter_select.html">D3.js Graph Gallery</a>, 
+            Referenced <a target="_blank" href="https://d3-graph-gallery.com/graph/connectedscatter_select.html">D3.js Graph Gallery</a>, 
             <a target="_blank" href="https://bl.ocks.org/d3noob/97e51c5be17291f79a27705cef827da2">bl.ocks (tooltip)</a>, and
-            <a target="_blank" href="https://bl.ocks.org/martinjc/f621fbc6a5b795bf01f4c0be0bee5093">b.locks (slider)</a>
+            <a target="_blank" href="https://bl.ocks.org/martinjc/f621fbc6a5b795bf01f4c0be0bee5093">b.locks (slider)</a>.
+            Visualizations by Arely Alcantara. 
         </p>
-        <h2 align="center">CO2 Emissions in <span id="year"></span> (tons per capita)</h2>
+        <h2 align="center">CO<sub>2</sub> Emissions in <span id="year"></span> (tons per capita)</h2>
         <label for="year">Please select a year: </label>
-        <input type="range" min=1960 max=2018 step=1 id="year-slider" value=2014 oninput="selected_year.value = year.value">
+        <input type="range" min=1960 max=2018 step=1 id="year-slider" value=1960 oninput="selected_year.value = year.value">
         <span id="selected_year"></span> 
-        <svg width=400 height=400 onload="init()"></svg>
+        <br />
+        <button id="play-button">Play</button>
+        <br />
+        <svg width=400 height=400 onload="init()" class="graph"></svg>
         <script>
             async function init() {
-                let currentYear = 1990;
+                let currentYear = 1960;
+                let targetYear = 2018;
                 document.getElementById("year").innerHTML = currentYear;
                 document.getElementById("selected_year").innerHTML = currentYear;
                 // parse data from csv file
@@ -52,7 +89,7 @@
                 // set margins
                 const margin = {top: 10, right: 40, bottom: 70, left: 40},
                     width = 1400 - margin.left - margin.right,
-                    height = 600 - margin.top - margin.bottom;
+                    height = 550 - margin.top - margin.bottom;
                 const svg = d3.select("svg")
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom)
@@ -72,7 +109,7 @@
                         .style("text-anchor", "end");
 
                 // set the y axis
-                const y = d3.scaleLinear().domain([0, 250]).range([ height, 0]);
+                const y = d3.scaleLinear().domain([0, 260]).range([ height, 0]);
                 svg.append("g").call(d3.axisLeft(y));
                 
                 // define line + styling
@@ -84,7 +121,7 @@
                 // define dots (data points) for a particular year
                 const dot = svg.selectAll('circle').data(dataFilter).join('circle')
                     .attr("cx", d => x(d.country)).attr("cy", d => y(+d.value))
-                    .attr("r", 3).attr("stroke", "#69b3a2").attr("stroke-width", 3).attr("fill", "white")
+                    .attr("r", 3).attr("fill", "#69b3a2")
                     .on("mouseover", function(event,d) {
                         div.transition().duration(200).style("opacity", .9);
                         div.html('<h2>' + d.country + "</h2>" 
@@ -114,6 +151,34 @@
                     var selectedOption = d3.select(this).property("value")
                     update(selectedOption);
                 });
+
+                d3.select("#play-button").on("click", function() {
+                    var button = d3.select(this);
+                    if (button.text() == "Pause") {
+                        moving = false;
+                        clearInterval(timer);
+                        // timer = 0;
+                        button.text("Play");
+                    } else {
+                        moving = true;
+                        timer = setInterval(step, 100);
+                        button.text("Pause");
+                    }
+                })
+
+                let playButton = d3.select("#play-button");
+
+                function step() {
+                    update(currentYear);
+                    document.getElementById("year-slider").value = currentYear;
+                    currentYear += 1;
+                    if (currentYear > targetYear) {
+                        moving = false;
+                        currentYear = 1960;
+                        clearInterval(timer);
+                        playButton.text("Play");
+                    }
+                }
             }
         </script>
     </body>
