@@ -1,0 +1,47 @@
+html {
+    overflow-x: hidden; 
+    max-width: 100%;
+    padding: 15px;
+}
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: auto;
+    height: auto;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+}
+#year-slider {
+    width:500px;
+}
+#play-button {
+    position: absolute;
+    background: #d080f0;
+    border-radius: 3px;
+    border: none;
+    color: white;
+    margin: 0;
+    width: 60px;
+    cursor: pointer;
+    height: 30px;
+    margin-top:10px;
+}
+#play-button:hover {
+    background-color: #4b14d8;
+}   
+.graph {
+    padding-top:25px;
+}
+.header-annotations {
+    color: gray;
+    font-size: 15px;
+    line-height: 15px;
+}
+p, h3 {
+    padding: 0px; 
+    margin: 10px;
+}
