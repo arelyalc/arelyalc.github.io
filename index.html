@@ -4,12 +4,12 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>CO2 Emissions by Country</title>
+        <title>CO2 Emissions</title>
         <style>
             html {
                 overflow-x: hidden; 
                 max-width: 100%;
-                padding: 10px;
+                padding: 15px;
             }
             div.tooltip {
                 position: absolute;
@@ -49,9 +49,27 @@
                 font-size: 15px;
                 line-height: 15px;
             }
+            p, h3 {
+                padding: 0px; 
+                margin: 10px;
+            }
          </style>
     </head>
     <body>
+        <h3>What is the biggest contributor to global warming and climate change?</h3>
+        <p>
+            "Fossil fuels – coal, oil and gas – are by far the largest contributor to global climate change, accounting for over 75 percent of global greenhouse gas emissions and nearly 90 percent of all carbon dioxide emissions."
+        </p>
+        <div align="center">
+            <h3>CO<sub>2</sub> Emissions in <span id="year"></span> (tons per capita)</h3>
+            <label for="year">Please select a year: </label>
+            <input type="range" min=1960 max=2018 step=1 id="year-slider" value=1960 oninput="selected_year.value = year.value">
+            <span id="selected_year"></span> 
+            <br />
+            <button id="play-button">Play</button>
+            <br />
+            <svg width=400 height=400 onload="init()" class="graph"></svg>
+        </div>
         <p class="header-annotations">
             Data collected from <i>CO<sub>2</sub> emissions country wise with income group </i> 
             on <a target="_blank" href="https://www.kaggle.com/datasets/azizulhakim98/c02-emissions-country-wise-with-income-group?select=Country+wise+CO2+emissions+.csv">Kaggle</a>.
@@ -61,14 +79,6 @@
             <a target="_blank" href="https://bl.ocks.org/martinjc/f621fbc6a5b795bf01f4c0be0bee5093">b.locks (slider)</a>.
             Visualizations by Arely Alcantara. 
         </p>
-        <h2 align="center">CO<sub>2</sub> Emissions in <span id="year"></span> (tons per capita)</h2>
-        <label for="year">Please select a year: </label>
-        <input type="range" min=1960 max=2018 step=1 id="year-slider" value=1960 oninput="selected_year.value = year.value">
-        <span id="selected_year"></span> 
-        <br />
-        <button id="play-button">Play</button>
-        <br />
-        <svg width=400 height=400 onload="init()" class="graph"></svg>
         <script>
             async function init() {
                 let currentYear = 1960;
@@ -80,9 +90,9 @@
                 var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
 
                 // set margins
-                const margin = {top: 10, right: 40, bottom: 70, left: 60},
-                    width = 1400 - margin.left - margin.right,
-                    height = 550 - margin.top - margin.bottom;
+                const margin = {top: 10, right: 40, bottom: 90, left: 60},
+                    width = 1000 - margin.left - margin.right,
+                    height = 500 - margin.top - margin.bottom;
                 const svg = d3.select("svg")
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom)
@@ -104,7 +114,7 @@
                 svg.append("text")
                     .attr("text-anchor", "end")
                     .attr("x", width)
-                    .attr("y", height + margin.top + 50)
+                    .attr("y", height + margin.top + 55)
                     .text("Country Name");
 
                 // set the y axis
