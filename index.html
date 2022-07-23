@@ -8,11 +8,24 @@
         <title>CO2 Emissions</title>
     </head>
     <body>
-        <h3>What is the biggest contributor to global warming and climate change?</h3>
+        <h3>What is the biggest contributor to climate change? And what are the effects of climate change - why should we care?</h3>
         <p>
-            "Fossil fuels – coal, oil and gas – are by far the largest contributor to global climate change, accounting for over 75 percent of global greenhouse gas emissions and nearly 90 percent of all carbon dioxide emissions."
+            "As greenhouse gas emissions blanket the Earth, they trap the sun’s heat. This leads to global warming and climate change. The world is now warming faster than at any point in recorded history. Warmer temperatures over time are changing weather patterns and disrupting the usual balance of nature. This poses many risks to human beings and all other forms of life on Earth <a target="_blank" href="https://www.un.org/en/climatechange/science/causes-effects-climate-change#:~:text=Fossil%20fuels%20%E2%80%93%20coal%2C%20oil%20and,they%20trap%20the%20sun's%20heat.">(1)</a>."
+            Generating power, manufacturing goods, cutting down forests, using transportation, producing food, powering buildings, and consuming too much all contribute to CO<sub>2</sub> emissions.
+            Climate change then results in higher temperatures, more severe storms, increased drought, a warmer ocean, loss of species, more health risks, and increased poverty. 
         </p>
-        <div align="center">
+
+        <div class="tab">
+            <button class="tablinks" onclick="openTab(event, 'Global')" id="defaultOpen">Global CO<sub>2</sub> Emissions</button>
+            <button class="tablinks" onclick="openTab(event, 'Country')">CO<sub>2</sub> Emissions by Country</button>
+            <button class="tablinks" onclick="openTab(event, 'Highest')">Highest CO<sub>2</sub> Contributors</button>
+        </div>
+        <div id="Global" class="tabcontent">
+            <h3>Global CO<sub>2</sub> Emissions</h3>
+            <div width=400 height=400 id="globalViz"></div>
+        </div>
+        
+        <div id="Country" class="tabcontent">
             <h3>CO<sub>2</sub> Emissions in <span id="year"></span> (tons per capita)</h3>
             <label for="year">Please select a year: </label>
             <input type="range" min=1960 max=2018 step=1 id="year-slider" value=1960 oninput="selected_year.value = year.value">
@@ -20,41 +33,133 @@
             <br />
             <button id="play-button">Play</button>
             <br />
-            <svg width=400 height=400 onload="init()" class="graph"></svg>
+            <svg width=400 height=400 onload="byCountry()" class="graph"></svg>
         </div>
+        
+        <div id="Highest" class="tabcontent">
+            <h3>Highest CO<sub>2</sub> Contributors</h3>
+        </div>
+
         <p class="header-annotations">
             Data collected from <i>CO<sub>2</sub> emissions country wise with income group </i> 
             on <a target="_blank" href="https://www.kaggle.com/datasets/azizulhakim98/c02-emissions-country-wise-with-income-group?select=Country+wise+CO2+emissions+.csv">Kaggle</a>.
             Created with <a target="_blank" href="https://d3js.org">D3.js</a>.
-            Referenced <a target="_blank" href="https://d3-graph-gallery.com/graph/connectedscatter_select.html">D3.js Graph Gallery</a>, 
+            Referenced <a target="_blank" href="https://www.un.org/en/climatechange/science/causes-effects-climate-change#:~:text=Fossil%20fuels%20%E2%80%93%20coal%2C%20oil%20and,they%20trap%20the%20sun's%20heat.""></a>
+            <a target="_blank" href="https://d3-graph-gallery.com/graph/connectedscatter_select.html">D3.js Graph Gallery</a>, 
             <a target="_blank" href="https://bl.ocks.org/d3noob/97e51c5be17291f79a27705cef827da2">bl.ocks (tooltip)</a>, and
             <a target="_blank" href="https://bl.ocks.org/martinjc/f621fbc6a5b795bf01f4c0be0bee5093">b.locks (slider)</a>.
             Visualizations by Arely Alcantara. 
         </p>
-        <script>
-            async function init() {
+
+        <script>  
+            function openTab(event, tabName) {
+                var i, tabcontent, tablinks;
+                tabcontent = document.getElementsByClassName("tabcontent");
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].style.display = "none";
+                }
+                tablinks = document.getElementsByClassName("tablinks");
+                for (i = 0; i < tablinks.length; i++) {
+                    tablinks[i].className = tablinks[i].className.replace(" active", "");
+                }
+                document.getElementById(tabName).style.display = "block";
+                event.currentTarget.className += " active";
+            }
+            async function global() {
+                // parse data from csv file
+                data = await d3.csv("https://raw.githubusercontent.com/arelyalc/arelyalc.github.io/master/Country%20CO2%20emissions.csv");
+                let globalSums = []
+                start = 1960
+                while(start <= 2018) {
+                    let sum = data.reduce((accumulator, object) => {
+                        return accumulator + Number(object[start.toString()]);
+                    }, 0);
+                    globalSums.push({year: start.toString(), emission: sum});
+                    start += 1
+                    sum = 0
+                }
+                var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
+                // set margins
+                var margin = {top: 10, right: 40, bottom: 60, left: 60},
+                    width = 1000 - margin.left - margin.right,
+                    height = 420 - margin.top - margin.bottom;
+
+                // append the svg object to the body of the page
+                var svg = d3.select("#globalViz").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g").attr("transform","translate(" + margin.left + "," + margin.top + ")");
+
+                // set the x axis
+                var x = d3.scaleBand()
+                    .domain(globalSums.map(d => d.year))
+                    .range([ 0, width ]).padding(0.2);
+                svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x))
+                    .selectAll("text")
+                        .attr("transform", "translate(-15,0)rotate(-45)")
+                        .style("font-size", 12)
+                        .style("text-anchor", "end");
+                // add x axis label
+                svg.append("text")
+                    .attr("text-anchor", "end")
+                    .attr("x", width)
+                    .attr("y", height + margin.top + 40)
+                    .text("Year");
+
+                // set the y axis
+                const y = d3.scaleLinear().domain([600, d3.max(globalSums, function(d) { return +d.emission; })]).range([ height, 0 ]);
+                svg.append("g").call(d3.axisLeft(y));
+                // add y axis label
+                svg.append("text")
+                    .attr("text-anchor", "end")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", -margin.left + 15)
+                    .attr("x", -margin.top)
+                    .text("CO2 emissions (ton per capita)")
+
+                 // define line + styling
+                const line = svg.append('g').append("path").datum(globalSums)
+                    .attr("d", d3.line().x(d => x(d.year)).y(d => y(+d.emission)))
+                    .attr("stroke", "rgb(152, 199, 241)").style("stroke-width", 4).style("fill", "none")
+                
+                // define dots (data points) for a particular year
+                const dot = svg.selectAll('circle').data(globalSums).join('circle')
+                    .attr("cx", d => x(d.year)).attr("cy", d => y(+d.emission))
+                    .attr("r", 2.5).attr("fill", "darkblue")
+                    .style("cursor", "pointer")
+                    .on("mouseover", function(event,d) {
+                        div.transition().duration(200).style("opacity", 1);
+                        div.html('<p> <b>Year:</b> ' + d.year + "</p>" 
+                            + "<p> <b>Emissions:</b> " + d.emission + "</p>")
+                            .style("left", (event.pageX) + "px")
+                            .style("top", (event.pageY - 50) + "px");
+                        })
+                    .on("mouseout", function(d) {
+                        div.transition().duration(500).style("opacity", 0);
+                    });
+            }
+            async function byCountry() {
                 let currentYear = 1960;
                 let targetYear = 2018;
                 document.getElementById("year").innerHTML = currentYear;
                 document.getElementById("selected_year").innerHTML = currentYear;
-                // parse data from csv file
                 data = await d3.csv("https://raw.githubusercontent.com/arelyalc/arelyalc.github.io/master/Country%20CO2%20emissions.csv");
+              
                 var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
 
-                // set margins
                 const margin = {top: 10, right: 40, bottom: 90, left: 60},
-                    width = 1000 - margin.left - margin.right,
-                    height = 500 - margin.top - margin.bottom;
+                    width = 1400 - margin.left - margin.right,
+                    height = 420 - margin.top - margin.bottom;
                 const svg = d3.select("svg")
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom)
                     .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
-                // set the x axis
                 const x = d3.scaleBand()
                     .range([ 0, width ])
-                    .domain(data.map(d => d['Country Name']))
-                    .padding(0.2);
+                    .domain(data.map(d => d['Country Name'])).padding(0.2);
                 svg.append("g")
                     .attr("transform", `translate(0,${height})`)
                     .call(d3.axisBottom(x))
@@ -62,17 +167,16 @@
                         .attr("transform", "translate(-15,0)rotate(-45)")
                         .style("font-size",5)
                         .style("text-anchor", "end");
-                // Add X axis label:
+                
                 svg.append("text")
                     .attr("text-anchor", "end")
                     .attr("x", width)
                     .attr("y", height + margin.top + 55)
                     .text("Country Name");
 
-                // set the y axis
                 const y = d3.scaleLinear().domain([0, 260]).range([ height, 0]);
                 svg.append("g").call(d3.axisLeft(y));
-                // Y axis label:
+               
                 svg.append("text")
                     .attr("text-anchor", "end")
                     .attr("transform", "rotate(-90)")
@@ -80,10 +184,9 @@
                     .attr("x", -margin.top)
                     .text("CO2 emissions (ton per capita)")
                 
-                // define line + styling
                 const line = svg.append('g').append("path").datum(data)
                     .attr("d", d3.line().x(d => x(d['Country Name'])).y(d => y(+d[currentYear])))
-                    .attr("stroke", "#d080f0").style("stroke-width", 4).style("fill", "none")
+                    .attr("stroke", "rgb(152, 199, 241)").style("stroke-width", 4).style("fill", "none")
                 var dataFilter = data.map(function(d){return {country: d['Country Name'], value: d[currentYear]} })
                 
                 // define dots (data points) for a particular year
@@ -93,8 +196,8 @@
                     .style("cursor", "pointer")
                     .on("mouseover", function(event,d) {
                         div.transition().duration(200).style("opacity", 1);
-                        div.html('<h2>' + d.country + "</h2>" 
-                            + "<h3> Emissions: " + d.value + "</h3>")
+                        div.html('<p><b>Country:</b> ' + d.country + "</p>" 
+                            + "<p><b>Emissions:</b> " + d.value + "</p>")
                             .style("left", (event.pageX) + "px")
                             .style("top", (event.pageY - 50) + "px");
                         })
@@ -146,6 +249,8 @@
                         playButton.text("Play");
                     }
                 }
+                document.getElementById("defaultOpen").click();
+                global();
             }
         </script>
     </body>
