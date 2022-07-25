@@ -10,15 +10,15 @@ div.tooltip {
     height: auto;
     padding: 2px;
     font: 12px;
-    background: lightsteelblue;
+    background: rgb(204, 208, 214);
     border: 0px;
     border-radius: 8px;
     pointer-events: none;
 }
-#year-slider {
+#year-slider, #year-slider-highest {
     width:500px;
 }
-#play-button {
+#play-button, #play-button-highest {
     position: absolute;
     background: darkblue;
     border-radius: 3px;
@@ -30,7 +30,7 @@ div.tooltip {
     height: 30px;
     margin-top:3px;
 }
-#play-button:hover {
+#play-button:hover, #play-button-highest:hover {
     background-color: #4b14d8;
 }   
 .graph {

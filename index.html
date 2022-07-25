@@ -14,36 +14,30 @@
             Generating power, manufacturing goods, cutting down forests, using transportation, producing food, powering buildings, and consuming too much all contribute to CO<sub>2</sub> emissions.
             Climate change then results in higher temperatures, more severe storms, increased drought, a warmer ocean, loss of species, more health risks, and increased poverty. 
         </p>
-
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'Global')" id="defaultOpen">Global CO<sub>2</sub> Emissions</button>
             <button class="tablinks" onclick="openTab(event, 'Country')">CO<sub>2</sub> Emissions by Country</button>
             <button class="tablinks" onclick="openTab(event, 'Highest')">Highest CO<sub>2</sub> Contributors</button>
         </div>
+
         <div id="Global" class="tabcontent">
             <h3>Global CO<sub>2</sub> Emissions</h3>
             <div width=400 height=400 id="globalViz"></div>
         </div>
-        
         <div id="Country" class="tabcontent">
             <h3>CO<sub>2</sub> Emissions in <span id="year"></span> (tons per capita)</h3>
             <label for="year">Please select a year: </label>
             <input type="range" min=1960 max=2018 step=1 id="year-slider" value=1960 oninput="selected_year.value = year.value">
-            <span id="selected_year"></span> 
-            <br />
-            <button id="play-button">Play</button>
-            <br />
+            <span id="selected_year"></span> <br/>
+            <button id="play-button">Play</button><br/>
             <svg width=400 height=400 onload="byCountry()" class="graph"></svg>
         </div>
-        
         <div id="Highest" class="tabcontent">
             <h3>Highest CO<sub>2</sub> in <span id="highest_year"></span> (tons per capita)</h3>
             <label for="highest_year">Please select a year: </label>
             <input type="range" min=1960 max=2018 step=1 id="year-slider-highest" value=1960 oninput="selected_year_highest.value = highest_year.value">
-            <span id="selected_year_highest"></span> 
-            <br />
-            <button id="play-button-highest">Play</button>
-            <br />
+            <span id="selected_year_highest"></span> <br/>
+            <button id="play-button-highest">Play</button><br/>
             <div width=400 height=400 class="graph" id="highestViz"></div>
         </div>
 
@@ -52,12 +46,12 @@
             on <a target="_blank" href="https://www.kaggle.com/datasets/azizulhakim98/c02-emissions-country-wise-with-income-group?select=Country+wise+CO2+emissions+.csv">Kaggle</a>.
             Created with <a target="_blank" href="https://d3js.org">D3.js</a>.
             Referenced <a target="_blank" href="https://www.un.org/en/climatechange/science/causes-effects-climate-change#:~:text=Fossil%20fuels%20%E2%80%93%20coal%2C%20oil%20and,they%20trap%20the%20sun's%20heat.""></a>
-            <a target="_blank" href="https://d3-graph-gallery.com/graph/connectedscatter_select.html">D3.js Graph Gallery</a>, 
-            <a target="_blank" href="https://bl.ocks.org/d3noob/97e51c5be17291f79a27705cef827da2">bl.ocks (tooltip)</a>, and
+            <a target="_blank" href="https://d3-graph-gallery.com/graph/connectedscatter_select.html">Graph Gallery (line chart)</a>, 
+            <a target="_blank" href="https://bl.ocks.org/d3noob/97e51c5be17291f79a27705cef827da2">bl.ocks (tooltip)</a>,
+            <a target="_blank" href="https://d3-graph-gallery.com/graph/barplot_button_data_hard.html">Graph Gallery (bar chart)</a>, and
             <a target="_blank" href="https://bl.ocks.org/martinjc/f621fbc6a5b795bf01f4c0be0bee5093">b.locks (slider)</a>.
             Visualizations by Arely Alcantara. 
         </p>
-
         <script>  
             function openTab(event, tabName) {
                 var i, tabcontent, tablinks;
@@ -72,141 +66,103 @@
                 document.getElementById(tabName).style.display = "block";
                 event.currentTarget.className += " active";
             }
+
             async function global() {
                 // parse data from csv file
                 data = await d3.csv("https://raw.githubusercontent.com/arelyalc/arelyalc.github.io/master/Country%20CO2%20emissions.csv");
-                let globalSums = []
-                start = 1960
+                let globalSums = [];
+                start = 1960;
                 while(start <= 2018) {
                     let sum = data.reduce((accumulator, object) => {
                         return accumulator + Number(object[start.toString()]);
                     }, 0);
                     globalSums.push({year: start.toString(), emission: sum});
-                    start += 1
-                    sum = 0
+                    start += 1;
+                    sum = 0;
                 }
                 var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
+
                 // set margins
-                var margin = {top: 10, right: 40, bottom: 60, left: 60},
-                    width = 1000 - margin.left - margin.right,
+                var margin = {top: 10, right: 40, bottom: 60, left: 60}, width = 1000 - margin.left - margin.right,
                     height = 420 - margin.top - margin.bottom;
 
                 // append the svg object to the body of the page
-                var svg = d3.select("#globalViz").append("svg")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom)
-                    .append("g").attr("transform","translate(" + margin.left + "," + margin.top + ")");
+                var svg = d3.select("#globalViz").append("svg").attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom).append("g")
+                    .attr("transform","translate(" + margin.left + "," + margin.top + ")");
 
                 // set the x axis
-                var x = d3.scaleBand()
-                    .domain(globalSums.map(d => d.year))
-                    .range([ 0, width ]).padding(0.2);
-                svg.append("g")
-                    .attr("transform", "translate(0," + height + ")")
-                    .call(d3.axisBottom(x))
-                    .selectAll("text")
-                        .attr("transform", "translate(-15,0)rotate(-45)")
-                        .style("font-size", 12)
-                        .style("text-anchor", "end");
+                var x = d3.scaleBand().domain(globalSums.map(d => d.year)).range([ 0, width ]).padding(0.2);
+                svg.append("g").attr("transform", "translate(0," + height + ")").call(d3.axisBottom(x))
+                    .selectAll("text").attr("transform", "translate(-15,0)rotate(-45)").style("font-size", 12)
+                    .style("text-anchor", "end");
                 // add x axis label
-                svg.append("text")
-                    .attr("text-anchor", "end")
-                    .attr("x", width)
-                    .attr("y", height + margin.top + 40)
-                    .text("Year");
+                svg.append("text").attr("text-anchor", "end").attr("x", width).attr("y", height + margin.top + 40).text("Year");
 
                 // set the y axis
-                const y = d3.scaleLinear().domain([600, d3.max(globalSums, function(d) { return +d.emission; })]).range([ height, 0 ]);
+                const y = d3.scaleLinear().domain([600, d3.max(globalSums, function(d) { return +d.emission; })])
+                    .range([ height, 0 ]);
                 svg.append("g").call(d3.axisLeft(y));
                 // add y axis label
-                svg.append("text")
-                    .attr("text-anchor", "end")
-                    .attr("transform", "rotate(-90)")
-                    .attr("y", -margin.left + 15)
-                    .attr("x", -margin.top)
-                    .text("CO2 emissions (tons per capita)")
+                svg.append("text").attr("text-anchor", "end").attr("transform", "rotate(-90)").attr("y", -margin.left + 15)
+                    .attr("x", -margin.top).text("CO2 emissions (tons per capita)");
 
                  // define line + styling
                 const line = svg.append('g').append("path").datum(globalSums)
                     .attr("d", d3.line().x(d => x(d.year)).y(d => y(+d.emission)))
-                    .attr("stroke", "rgb(152, 199, 241)").style("stroke-width", 4).style("fill", "none")
+                    .attr("stroke", "rgb(152, 199, 241)").style("stroke-width", 4).style("fill", "none");
                 
                 // define dots (data points) for a particular year
-                const dot = svg.selectAll('circle').data(globalSums).join('circle')
-                    .attr("cx", d => x(d.year)).attr("cy", d => y(+d.emission))
-                    .attr("r", 2.5).attr("fill", "darkblue")
-                    .style("cursor", "pointer")
+                const dot = svg.selectAll('circle').data(globalSums).join('circle').attr("cx", d => x(d.year)).attr("cy", d => y(+d.emission))
+                    .attr("r", 2.5).attr("fill", "darkblue").style("cursor", "pointer")
                     .on("mouseover", function(event,d) {
                         div.transition().duration(200).style("opacity", 1);
-                        div.html('<p> <b>Year:</b> ' + d.year + "</p>" 
-                            + "<p> <b>Emissions:</b> " + d.emission + "</p>")
-                            .style("left", (event.pageX) + "px")
-                            .style("top", (event.pageY - 50) + "px");
-                        })
+                        div.html('<p> <b>Year:</b> ' + d.year + "</p>" + "<p> <b>Emissions:</b> " + d.emission + "</p>")
+                            .style("left", (event.pageX) + "px").style("top", (event.pageY - 50) + "px");
+                    })
                     .on("mouseout", function(d) {
                         div.transition().duration(500).style("opacity", 0);
                     });
             }
+
             async function byCountry() {
                 let currentYear = 1960;
                 let targetYear = 2018;
                 document.getElementById("year").innerHTML = currentYear;
                 document.getElementById("selected_year").innerHTML = currentYear;
                 data = await d3.csv("https://raw.githubusercontent.com/arelyalc/arelyalc.github.io/master/Country%20CO2%20emissions.csv");
-              
                 var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
 
-                const margin = {top: 10, right: 40, bottom: 90, left: 60},
-                    width = 1400 - margin.left - margin.right,
+                const margin = {top: 10, right: 40, bottom: 90, left: 60}, width = 1400 - margin.left - margin.right,
                     height = 420 - margin.top - margin.bottom;
-                const svg = d3.select("svg")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom)
-                    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+                const svg = d3.select("svg").attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom).append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-                const x = d3.scaleBand()
-                    .range([ 0, width ])
-                    .domain(data.map(d => d['Country Name'])).padding(0.2);
-                svg.append("g")
-                    .attr("transform", `translate(0,${height})`)
-                    .call(d3.axisBottom(x))
-                    .selectAll("text")
-                        .attr("transform", "translate(-15,0)rotate(-45)")
-                        .style("font-size",5)
-                        .style("text-anchor", "end");
-                
-                svg.append("text")
-                    .attr("text-anchor", "end")
-                    .attr("x", width)
-                    .attr("y", height + margin.top + 55)
+                const x = d3.scaleBand().range([ 0, width ]).domain(data.map(d => d['Country Name'])).padding(0.2);
+                svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x)).selectAll("text")
+                    .attr("transform", "translate(-15,0)rotate(-45)").style("font-size",5).style("text-anchor", "end");
+                svg.append("text").attr("text-anchor", "end").attr("x", width).attr("y", height + margin.top + 55)
                     .text("Country Name");
 
                 const y = d3.scaleLinear().domain([0, 260]).range([ height, 0]);
-                svg.append("g").call(d3.axisLeft(y));
-               
-                svg.append("text")
-                    .attr("text-anchor", "end")
-                    .attr("transform", "rotate(-90)")
-                    .attr("y", -margin.left + 20)
-                    .attr("x", -margin.top)
-                    .text("CO2 emissions (ton per capita)")
+                svg.append("g").call(d3.axisLeft(y));          
+                svg.append("text").attr("text-anchor", "end").attr("transform", "rotate(-90)").attr("y", -margin.left + 20)
+                    .attr("x", -margin.top).text("CO2 emissions (ton per capita)");
                 
                 const line = svg.append('g').append("path").datum(data)
                     .attr("d", d3.line().x(d => x(d['Country Name'])).y(d => y(+d[currentYear])))
-                    .attr("stroke", "rgb(152, 199, 241)").style("stroke-width", 4).style("fill", "none")
-                var dataFilter = data.map(function(d){return {country: d['Country Name'], value: d[currentYear]} })
+                    .attr("stroke", "rgb(152, 199, 241)").style("stroke-width", 4).style("fill", "none");
+                var dataFilter = data.map(function(d){return {country: d['Country Name'], value: d[currentYear]}});
                 
-              // define dots (data points) for a particular year
-              const dot = svg.selectAll('circle').data(dataFilter).join('circle')
+                // define dots (data points) for a particular year
+                const dot = svg.selectAll('circle').data(dataFilter).join('circle')
                     .attr("cx", d => x(d.country)).attr("cy", d => y(+d.value))
-                    .attr("r", 2.5).attr("fill", "darkblue")
-                    .style("cursor", "pointer")
+                    .attr("r", 2.5).attr("fill", "darkblue").style("cursor", "pointer")
                     .on("mouseover", function(event,d) {
                         div.transition().duration(200).style("opacity", 1);
-                        div.html('<p><b>Country:</b> ' + d.country + "</p>" 
-                            + "<p><b>Emissions:</b> " + d.value + "</p>")
-                            .style("left", (event.pageX) + "px")
-                            .style("top", (event.pageY - 50) + "px");
+                        div.html('<p><b>Country:</b> ' + d.country + "</p>" + "<p><b>Emissions:</b> " + d.value + "</p>")
+                            .style("left", (event.pageX) + "px").style("top", (event.pageY - 50) + "px");
                         })
                     .on("mouseout", function(d) {
                         div.transition().duration(500).style("opacity", 0);
@@ -214,22 +170,23 @@
 
                 // function to update line chart based on year
                 function update(selectedGroup) {
-                    var dataFilter = data.map(function(d){return {country: d['Country Name'], value: d[selectedGroup]} })
+                    var dataFilter = data.map(function(d){return {country: d['Country Name'], value: d[selectedGroup]}});
                     currentYear = selectedGroup;
                     document.getElementById("year").innerHTML = currentYear;
                     document.getElementById("selected_year").innerHTML = currentYear;
                     line.datum(dataFilter).transition().duration(10)
-                        .attr("d", d3.line().x(function(d) { return x(d.country) }).y(function(d) { return y(+d.value) }))
+                        .attr("d", d3.line().x(function(d) { return x(d.country) }).y(function(d) { return y(+d.value)}));
                     dot.data(dataFilter).transition().duration(10)
-                        .attr("cx", function(d) { return x(d.country) }).attr("cy", function(d) { return y(+d.value) })
+                        .attr("cx", function(d) { return x(d.country) }).attr("cy", function(d) { return y(+d.value)});
                 }
 
                 // once slider moves, update according to year
                 d3.select('#year-slider').on('change', function(d) {
-                    var selectedOption = d3.select(this).property("value")
+                    var selectedOption = d3.select(this).property("value");
                     update(selectedOption);
                 });
 
+                // control the play/pause button and update chart accordingly
                 d3.select("#play-button").on("click", function() {
                     var button = d3.select(this);
                     if (button.text() == "Pause") {
@@ -241,8 +198,7 @@
                         timer = setInterval(step, 100);
                         button.text("Pause");
                     }
-                })
-
+                });
                 let playButton = d3.select("#play-button");
                 function step() {
                     update(currentYear);
@@ -265,21 +221,16 @@
                 document.getElementById("highest_year").innerHTML = currentYear;
                 document.getElementById("selected_year_highest").innerHTML = currentYear;
                 data_orig = await d3.csv("https://raw.githubusercontent.com/arelyalc/arelyalc.github.io/master/Country%20CO2%20emissions.csv");
-                
                 var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
 
-                const margin = {top: 10, right: 40, bottom: 90, left: 60},
-                    width = 1000 - margin.left - margin.right,
+                const margin = {top: 10, right: 40, bottom: 90, left: 60},width = 1000 - margin.left - margin.right,
                     height = 420 - margin.top - margin.bottom;
                 
-                const svg = d3.select("#highestViz").append("svg")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom)
-                    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+                const svg = d3.select("#highestViz").append("svg").attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom).append("g").attr("transform", `translate(${margin.left},${margin.top})`);
                 
-                var x = d3.scaleBand().range([ 0, width ])
-                var xAxis = svg.append("g").attr("transform", `translate(0,${height})`)
-
+                var x = d3.scaleBand().range([ 0, width ]);
+                var xAxis = svg.append("g").attr("transform", `translate(0,${height})`);
                 var y = d3.scaleLinear().domain([0, 260]).range([ height, 0]);
                 var yAxis = svg.append("g");
 
@@ -292,64 +243,38 @@
                     let max_vals = sorted_data.slice(0, 10);
 
                     // update the x axis
-                    x.domain(max_vals.map(function(d) { return d['Country Name']; }))
-                    xAxis.call(d3.axisBottom(x))
-                    svg.selectAll("text")
-                        .attr("transform", "translate(-10,0)rotate(-35)")
-                        .style("font-size",12)
+                    x.domain(max_vals.map(function(d) { return d['Country Name']; }));
+                    xAxis.call(d3.axisBottom(x));
+                    svg.selectAll("text").attr("transform", "translate(-10,0)rotate(-35)").style("font-size",12)
                         .style("text-anchor", "end");
-                    svg.append("text")
-                        .attr("text-anchor", "end")
-                        .attr("x", width)
-                        .attr("y", height + margin.top + 60)
+                    svg.append("text").attr("text-anchor", "end").attr("x", width).attr("y", height + margin.top + 60)
                         .text("Country Name");
                     // update the y axis
                     y.domain([0, d3.max(max_vals, function(d) { return +d[currentYear.toString()] }) ]);
                     yAxis.call(d3.axisLeft(y));
-                    svg.append("text")
-                        .attr("text-anchor", "end")
-                        .attr("transform", "rotate(-90)")
-                        .attr("y", -margin.left + 20)
-                        .attr("x", -margin.top)
-                        .text("CO2 emissions (tons per capita)")
+                    svg.append("text").attr("text-anchor", "end").attr("transform", "rotate(-90)").attr("y", -margin.left + 20)
+                        .attr("x", -margin.top).text("CO2 emissions (tons per capita)");
 
-                    // Create the u variable
-                    var u = svg.selectAll("rect")
-                        .data(max_vals)
-
-                    u.enter()
-                        .append("rect") // Add a new rect for each new elements
-                        .merge(u) // get the already existing elements as well
-                        .transition() // and apply changes to all of them
-                        .duration(10)
-                        .attr("x", function(d) { return x(d['Country Name']); })
-                        .attr("y", function(d) { return y(+d[currentYear]); })
-                        .attr("width", 70)
-                        .attr("height", function(d) { return height - y(+d[currentYear]); })
-                        .attr("fill", "rgb(152, 199, 241)")
-                        .style("cursor", "pointer")
+                    var u = svg.selectAll("rect").data(max_vals);
+                    u.enter().append("rect") .merge(u).transition().duration(10).attr("x", function(d) { return x(d['Country Name']); })
+                        .attr("y", function(d) { return y(+d[currentYear]); }).attr("width", 70)
+                        .attr("height", function(d) { return height - y(+d[currentYear]); }).attr("fill", "rgb(152, 199, 241)")
+                        .style("cursor", "pointer");
                     d3.selectAll('rect').on("mouseover", function(event,d) {
                             div.transition().duration(200).style("opacity", 1);
-                            div.html('<p> <b>Year:</b> ' + d['Country Name'] + "</p>" 
-                                + "<p> <b>Emissions:</b> " + d[currentYear] + "</p>")
-                                .style("left", (event.pageX) + "px")
-                                .style("top", (event.pageY - 50) + "px");
-                            })
+                            div.html('<p> <b>Year:</b> ' + d['Country Name'] + "</p>" + "<p> <b>Emissions:</b> " + d[currentYear] + "</p>")
+                                .style("left", (event.pageX) + "px").style("top", (event.pageY - 50) + "px");
+                        })
                         .on("mouseout", function(d) {
                             div.transition().duration(500).style("opacity", 0);
-                        });
-
-                    // If less group in the new dataset, I delete the ones not in use anymore
-                    u
-                        .exit()
-                        .remove()
+                    });
+                    u.exit().remove()
                 }
 
                 d3.select('#year-slider-highest').on('change', function(d) {
-                    var selectedOption = d3.select(this).property("value")
+                    var selectedOption = d3.select(this).property("value");
                     update(selectedOption);
                 });
-
                 d3.select("#play-button-highest").on("click", function() {
                     var button = d3.select(this);
                     if (button.text() == "Pause") {
@@ -362,7 +287,6 @@
                         button.text("Pause");
                     }
                 });
-
                 let playButton = d3.select("#play-button-highest");
                 function step() {
                     update(currentYear);
