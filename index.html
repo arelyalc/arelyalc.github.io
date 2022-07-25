@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
     <link href="styles.css" rel="stylesheet">
     <head>
         <meta charset="UTF-8">
@@ -48,8 +49,9 @@
             Referenced <a target="_blank" href="https://www.un.org/en/climatechange/science/causes-effects-climate-change#:~:text=Fossil%20fuels%20%E2%80%93%20coal%2C%20oil%20and,they%20trap%20the%20sun's%20heat.""></a>
             <a target="_blank" href="https://d3-graph-gallery.com/graph/connectedscatter_select.html">Graph Gallery (line chart)</a>, 
             <a target="_blank" href="https://bl.ocks.org/d3noob/97e51c5be17291f79a27705cef827da2">bl.ocks (tooltip)</a>,
-            <a target="_blank" href="https://d3-graph-gallery.com/graph/barplot_button_data_hard.html">Graph Gallery (bar chart)</a>, and
-            <a target="_blank" href="https://bl.ocks.org/martinjc/f621fbc6a5b795bf01f4c0be0bee5093">b.locks (slider)</a>.
+            <a target="_blank" href="https://d3-graph-gallery.com/graph/barplot_button_data_hard.html">Graph Gallery (bar chart)</a>, 
+            <a target="_blank" href="https://bl.ocks.org/martinjc/f621fbc6a5b795bf01f4c0be0bee5093">b.locks (slider)</a>, and
+            <a target="_blank" href="https://history.aip.org/climate/timeline.htm">climate change facts</a>.
             Visualizations by Arely Alcantara. 
         </p>
         <script>  
@@ -123,6 +125,81 @@
                     .on("mouseout", function(d) {
                         div.transition().duration(500).style("opacity", 0);
                     });
+                
+                // features of the annotation
+                const annotations = [
+                {
+                    note: {
+                        label: "Emissions are at the highest point - globally",
+                        title: "1976",
+                        align: "middle",
+                        wrap: 200,
+                    },
+                    color: ["purple"],
+                    x: 250,
+                    y: 0,
+                    dy: 0,
+                    dx: 108
+                },
+                {
+                    note: {
+                        label: "Oil embargo and price rise bring first \"energy crisis\"",
+                        title: "1973",
+                        align: "right",
+                        wrap: 100,
+                    },
+                    color: ["purple"],
+                    x: 200,
+                    y: 8,
+                    dy: 0,
+                    dx: -60
+                },
+                {
+                    note: {
+                        label: "Solar electricity and wind power become economically competitive with fossil fuels in some regions",
+                        title: "2016",
+                        align: "right",
+                        wrap: 200,
+                    },
+                    color: ["purple"],
+                    x: 855,
+                    y: 170,
+                    dy: 20,
+                    dx: 0
+                },
+                {
+                    note: {
+                        label: "Toyota introduces Prius in Japan, first mass-market electric hybrid car; swift progress in large wind turbines, solar electricity, and other energy alternatives",
+                        title: "1997",
+                        align: "middle",
+                        wrap: 200,
+                    },
+                    color: ["purple"],
+                    x: 565,
+                    y: 180,
+                    dy: -40,
+                    dx: 0
+                },
+                {
+                    note: {
+                        label: "Greenhouse warming becomes a factor in mainstream politics",
+                        title: "1983",
+                        align: "middle",
+                        wrap: 200,
+                    },
+                    color: ["purple"],
+                    x: 353,
+                    y: 180,
+                    dy: 40,
+                    dx: 0
+                }
+                ]
+                // Add annotation to the chart
+                const makeAnnotations = d3.annotation()
+                .annotations(annotations)
+                svg
+                .append("g")
+                .call(makeAnnotations)
             }
 
             async function byCountry() {
