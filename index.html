@@ -37,7 +37,14 @@
         </div>
         
         <div id="Highest" class="tabcontent">
-            <h3>Highest CO<sub>2</sub> Contributors</h3>
+            <h3>Highest CO<sub>2</sub> in <span id="highest_year"></span> (tons per capita)</h3>
+            <label for="highest_year">Please select a year: </label>
+            <input type="range" min=1960 max=2018 step=1 id="year-slider-highest" value=1960 oninput="selected_year_highest.value = highest_year.value">
+            <span id="selected_year_highest"></span> 
+            <br />
+            <button id="play-button-highest">Play</button>
+            <br />
+            <div width=400 height=400 class="graph" id="highestViz"></div>
         </div>
 
         <p class="header-annotations">
@@ -117,7 +124,7 @@
                     .attr("transform", "rotate(-90)")
                     .attr("y", -margin.left + 15)
                     .attr("x", -margin.top)
-                    .text("CO2 emissions (ton per capita)")
+                    .text("CO2 emissions (tons per capita)")
 
                  // define line + styling
                 const line = svg.append('g').append("path").datum(globalSums)
@@ -189,8 +196,8 @@
                     .attr("stroke", "rgb(152, 199, 241)").style("stroke-width", 4).style("fill", "none")
                 var dataFilter = data.map(function(d){return {country: d['Country Name'], value: d[currentYear]} })
                 
-                // define dots (data points) for a particular year
-                const dot = svg.selectAll('circle').data(dataFilter).join('circle')
+              // define dots (data points) for a particular year
+              const dot = svg.selectAll('circle').data(dataFilter).join('circle')
                     .attr("cx", d => x(d.country)).attr("cy", d => y(+d.value))
                     .attr("r", 2.5).attr("fill", "darkblue")
                     .style("cursor", "pointer")
@@ -215,7 +222,6 @@
                         .attr("d", d3.line().x(function(d) { return x(d.country) }).y(function(d) { return y(+d.value) }))
                     dot.data(dataFilter).transition().duration(10)
                         .attr("cx", function(d) { return x(d.country) }).attr("cy", function(d) { return y(+d.value) })
-
                 }
 
                 // once slider moves, update according to year
@@ -251,6 +257,125 @@
                 }
                 document.getElementById("defaultOpen").click();
                 global();
+                highest();
+            }
+            async function highest() {
+                let currentYear = 1960;
+                let targetYear = 2018;
+                document.getElementById("highest_year").innerHTML = currentYear;
+                document.getElementById("selected_year_highest").innerHTML = currentYear;
+                data_orig = await d3.csv("https://raw.githubusercontent.com/arelyalc/arelyalc.github.io/master/Country%20CO2%20emissions.csv");
+                
+                var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
+
+                const margin = {top: 10, right: 40, bottom: 90, left: 60},
+                    width = 1000 - margin.left - margin.right,
+                    height = 420 - margin.top - margin.bottom;
+                
+                const svg = d3.select("#highestViz").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+                
+                var x = d3.scaleBand().range([ 0, width ])
+                var xAxis = svg.append("g").attr("transform", `translate(0,${height})`)
+
+                var y = d3.scaleLinear().domain([0, 260]).range([ height, 0]);
+                var yAxis = svg.append("g");
+
+                function update(selectedGroup) {
+                    currentYear = selectedGroup;
+                    document.getElementById("highest_year").innerHTML = currentYear;
+                    document.getElementById("selected_year_highest").innerHTML = currentYear;
+                    // find new maximum values
+                    let sorted_data = data_orig.sort((a, b) => b[currentYear.toString()] - a[currentYear.toString()])
+                    let max_vals = sorted_data.slice(0, 10);
+
+                    // update the x axis
+                    x.domain(max_vals.map(function(d) { return d['Country Name']; }))
+                    xAxis.call(d3.axisBottom(x))
+                    svg.selectAll("text")
+                        .attr("transform", "translate(-10,0)rotate(-35)")
+                        .style("font-size",12)
+                        .style("text-anchor", "end");
+                    svg.append("text")
+                        .attr("text-anchor", "end")
+                        .attr("x", width)
+                        .attr("y", height + margin.top + 60)
+                        .text("Country Name");
+                    // update the y axis
+                    y.domain([0, d3.max(max_vals, function(d) { return +d[currentYear.toString()] }) ]);
+                    yAxis.call(d3.axisLeft(y));
+                    svg.append("text")
+                        .attr("text-anchor", "end")
+                        .attr("transform", "rotate(-90)")
+                        .attr("y", -margin.left + 20)
+                        .attr("x", -margin.top)
+                        .text("CO2 emissions (tons per capita)")
+
+                    // Create the u variable
+                    var u = svg.selectAll("rect")
+                        .data(max_vals)
+
+                    u.enter()
+                        .append("rect") // Add a new rect for each new elements
+                        .merge(u) // get the already existing elements as well
+                        .transition() // and apply changes to all of them
+                        .duration(10)
+                        .attr("x", function(d) { return x(d['Country Name']); })
+                        .attr("y", function(d) { return y(+d[currentYear]); })
+                        .attr("width", 70)
+                        .attr("height", function(d) { return height - y(+d[currentYear]); })
+                        .attr("fill", "rgb(152, 199, 241)")
+                        .style("cursor", "pointer")
+                    d3.selectAll('rect').on("mouseover", function(event,d) {
+                            div.transition().duration(200).style("opacity", 1);
+                            div.html('<p> <b>Year:</b> ' + d['Country Name'] + "</p>" 
+                                + "<p> <b>Emissions:</b> " + d[currentYear] + "</p>")
+                                .style("left", (event.pageX) + "px")
+                                .style("top", (event.pageY - 50) + "px");
+                            })
+                        .on("mouseout", function(d) {
+                            div.transition().duration(500).style("opacity", 0);
+                        });
+
+                    // If less group in the new dataset, I delete the ones not in use anymore
+                    u
+                        .exit()
+                        .remove()
+                }
+
+                d3.select('#year-slider-highest').on('change', function(d) {
+                    var selectedOption = d3.select(this).property("value")
+                    update(selectedOption);
+                });
+
+                d3.select("#play-button-highest").on("click", function() {
+                    var button = d3.select(this);
+                    if (button.text() == "Pause") {
+                        moving = false;
+                        clearInterval(timer);
+                        button.text("Play");
+                    } else {
+                        moving = true;
+                        timer = setInterval(step, 100);
+                        button.text("Pause");
+                    }
+                });
+
+                let playButton = d3.select("#play-button-highest");
+                function step() {
+                    update(currentYear);
+                    document.getElementById("year-slider-highest").value = currentYear;
+                    currentYear += 1;
+                    if (currentYear > targetYear) {
+                        moving = false;
+                        currentYear = 1960;
+                        clearInterval(timer);
+                        playButton.text("Play");
+                    }
+                }
+                update(1960);
             }
         </script>
     </body>
