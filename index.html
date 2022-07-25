@@ -40,6 +40,7 @@
             <span id="selected_year_highest"></span> <br/>
             <button id="play-button-highest">Play</button><br/>
             <div width=400 height=400 class="graph" id="highestViz"></div>
+            <div id="legend"></div>
         </div>
 
         <p class="header-annotations">
@@ -193,13 +194,10 @@
                     dy: 40,
                     dx: 0
                 }
-                ]
+                ];
                 // Add annotation to the chart
-                const makeAnnotations = d3.annotation()
-                .annotations(annotations)
-                svg
-                .append("g")
-                .call(makeAnnotations)
+                const makeAnnotations = d3.annotation().annotations(annotations);
+                svg.append("g").call(makeAnnotations);
             }
 
             async function byCountry() {
@@ -292,32 +290,46 @@
                 global();
                 highest();
             }
+
             async function highest() {
                 let currentYear = 1960;
                 let targetYear = 2018;
+                // developed countries list from: https://worldpopulationreview.com/country-rankings/developed-countries
+                let developedCountries = ["Norway", "Switzerland", "Ireland", "Hong Kong", "Iceland", "Germany", "Sweden", "Australia",
+                    "Netherlands", "Denmark", "Singapore", "Finland", "United Kingdom", "Belgium", "New Zealand", "Canada", "United States",
+                    "Austria", "Japan", "Israel", "Liechtenstein", "Slovenia", "South Korea", "Luxembourg", "Spain", "France", "Malta",
+                    "Italy", "Estonia", "United Arab Emirates", "Greece", "Cyprus", "Lithuania", "Poland", "Andorra", "Latvia", "Portugal", 
+                    "Slovakia", "Saudi Arabia", "Hungary", "Bahrain", "Chile", "Croatia", "Qatar", "Argentina", "Montenegro", "Romania",
+                    "Palau", "Kazakhstan", "Russia", "Belarus", "Turkey", "Uruguay", "Bulgaria", "Panama", "Bahamas", "Barbados", "Oman",
+                    "Goergia", "Malaysia", "Costa Rica", "Serbia", "Kuwait", "Mauritius", "North America"];
                 document.getElementById("highest_year").innerHTML = currentYear;
                 document.getElementById("selected_year_highest").innerHTML = currentYear;
                 data_orig = await d3.csv("https://raw.githubusercontent.com/arelyalc/arelyalc.github.io/master/Country%20CO2%20emissions.csv");
                 var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
 
-                const margin = {top: 10, right: 40, bottom: 90, left: 60},width = 1000 - margin.left - margin.right,
+                const margin = {top: 10, right: 50, bottom: 90, left: 60}, width = 1000 - margin.left - margin.right,
                     height = 420 - margin.top - margin.bottom;
                 
                 const svg = d3.select("#highestViz").append("svg").attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom).append("g").attr("transform", `translate(${margin.left},${margin.top})`);
                 
-                var x = d3.scaleBand().range([ 0, width ]);
+                var x = d3.scaleBand().range([ 0, width]);
                 var xAxis = svg.append("g").attr("transform", `translate(0,${height})`);
                 var y = d3.scaleLinear().domain([0, 260]).range([ height, 0]);
                 var yAxis = svg.append("g");
-
+                var annotations = [];
+                var makeAnnotations = d3.annotation().annotations(annotations);
+                let max_vals = [];
+            
                 function update(selectedGroup) {
+                    svg.selectAll("#my_annotations").remove();
+                    annotations = [];
                     currentYear = selectedGroup;
                     document.getElementById("highest_year").innerHTML = currentYear;
                     document.getElementById("selected_year_highest").innerHTML = currentYear;
                     // find new maximum values
                     let sorted_data = data_orig.sort((a, b) => b[currentYear.toString()] - a[currentYear.toString()])
-                    let max_vals = sorted_data.slice(0, 10);
+                    max_vals = sorted_data.slice(0, 10);
 
                     // update the x axis
                     x.domain(max_vals.map(function(d) { return d['Country Name']; }));
@@ -331,11 +343,23 @@
                     yAxis.call(d3.axisLeft(y));
                     svg.append("text").attr("text-anchor", "end").attr("transform", "rotate(-90)").attr("y", -margin.left + 20)
                         .attr("x", -margin.top).text("CO2 emissions (tons per capita)");
-
+                    
+                    svg.append("g").append("circle").attr("cx",690).attr("cy",20).attr("r", 6).style("fill", "rgb(97, 136, 221)");
+                    svg.append("g").append("circle").attr("cx",690).attr("cy",50).attr("r", 6).style("fill", "rgb(131, 191, 244)");
+                    svg.append("g").append("text").attr("x",710).attr("y", 25).text("Developed Country").style("font-size", "15px");
+                    svg.append("g").append("text").attr("x", 710).attr("y", 50).text("Developing Country").style("font-size", "15px").attr("alignment-baseline","middle");
+            
                     var u = svg.selectAll("rect").data(max_vals);
                     u.enter().append("rect") .merge(u).transition().duration(10).attr("x", function(d) { return x(d['Country Name']); })
                         .attr("y", function(d) { return y(+d[currentYear]); }).attr("width", 70)
                         .attr("height", function(d) { return height - y(+d[currentYear]); }).attr("fill", "rgb(152, 199, 241)")
+                        .attr("fill", function(d) {
+                            if (developedCountries.includes(d['Country Name'])) {
+                                return "rgb(97, 136, 221)";
+                            } else {
+                                return "rgb(131, 191, 244)";
+                            }
+                        })
                         .style("cursor", "pointer");
                     d3.selectAll('rect').on("mouseover", function(event,d) {
                             div.transition().duration(200).style("opacity", 1);
@@ -345,9 +369,27 @@
                         .on("mouseout", function(d) {
                             div.transition().duration(500).style("opacity", 0);
                     });
-                    u.exit().remove()
-                }
 
+                    maximum = max_vals[0];
+                    annotations.push(
+                    {
+                        note: {
+                            label: maximum['Country Name'] + " had the highest emissions in " + currentYear,
+                            align: "left",
+                            wrap: 300
+                        },
+                        color: ["purple"],
+                        x: 60,
+                        y: 5,
+                        dy: 0,
+                        dx: 50
+                    });
+                    // Add annotation to the chart
+                    makeAnnotations = d3.annotation().annotations(annotations);
+                    svg.append("g").attr("id", "my_annotations").call(makeAnnotations);
+                
+                    u.exit().remove();
+                }
                 d3.select('#year-slider-highest').on('change', function(d) {
                     var selectedOption = d3.select(this).property("value");
                     update(selectedOption);
