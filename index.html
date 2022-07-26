@@ -218,7 +218,6 @@
                     .attr("transform", "translate(-15,0)rotate(-45)").style("font-size",5).style("text-anchor", "end");
                 svg.append("text").attr("text-anchor", "end").attr("x", width).attr("y", height + margin.top + 55)
                     .text("Country Name");
-
                 const y = d3.scaleLinear().domain([0, 260]).range([ height, 0]);
                 svg.append("g").call(d3.axisLeft(y));          
                 svg.append("text").attr("text-anchor", "end").attr("transform", "rotate(-90)").attr("y", -margin.left + 20)
@@ -268,10 +267,9 @@
                         y: 325,
                         dx: 50,
                         dy: -50
-                    }]
+                    }];
                 let makeAnnotations = d3.annotation().annotations(annotations);
                 svg.append("g").attr("id", "my_annotations").call(makeAnnotations);
-                
 
                 const line = svg.append('g').append("path").datum(data)
                     .attr("d", d3.line().x(d => x(d['Country Name'])).y(d => y(+d[currentYear])))
@@ -290,8 +288,7 @@
                     .on("mouseout", function(d) {
                         div.transition().duration(500).style("opacity", 0);
                     });
-                
-
+            
                 // function to update line chart based on year
                 function update(selectedGroup) {
                     svg.selectAll("#my_annotations").remove();
@@ -344,14 +341,12 @@
                     makeAnnotations = d3.annotation().annotations(annotations);
                         svg.append("g").attr("id", "my_annotations").call(makeAnnotations);
                 }
-
                 // once slider moves, update according to year
                 d3.select('#year-slider').on('change', function(d) {
                     var selectedOption = parseInt(d3.select(this).property("value"));
                     currentYear = selectedOption;
                     update(selectedOption);
                 });
-
                 // control the play/pause button and update chart accordingly
                 d3.select("#play-button").on("click", function() {
                     var button = d3.select(this);
