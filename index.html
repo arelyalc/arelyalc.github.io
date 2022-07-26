@@ -17,8 +17,8 @@
         </p>
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'Global')" id="defaultOpen">Global CO<sub>2</sub> Emissions</button>
-            <button class="tablinks" onclick="openTab(event, 'Country')">CO<sub>2</sub> Emissions by Country</button>
             <button class="tablinks" onclick="openTab(event, 'Highest')">Highest CO<sub>2</sub> Contributors</button>
+            <button class="tablinks" onclick="openTab(event, 'Country')">CO<sub>2</sub> Emissions by Country</button>
         </div>
 
         <div id="Global" class="tabcontent">
@@ -40,7 +40,6 @@
             <span id="selected_year_highest"></span> <br/>
             <button id="play-button-highest">Play</button><br/>
             <div width=400 height=400 class="graph" id="highestViz"></div>
-            <div id="legend"></div>
         </div>
 
         <p class="header-annotations">
@@ -224,7 +223,21 @@
                 svg.append("g").call(d3.axisLeft(y));          
                 svg.append("text").attr("text-anchor", "end").attr("transform", "rotate(-90)").attr("y", -margin.left + 20)
                     .attr("x", -margin.top).text("CO2 emissions (ton per capita)");
+                let annotations = [
+                    {
+                        note: {
+                            label: "Each point represents a country",
+                            align: "middle",
+                            wrap: 200,
+                        },
+                        color: ["purple"],
+                        x: 250,
+                        y: 100
+                    }]
+                let makeAnnotations = d3.annotation().annotations(annotations);
+                svg.append("g").attr("id", "my_annotations").call(makeAnnotations);
                 
+
                 const line = svg.append('g').append("path").datum(data)
                     .attr("d", d3.line().x(d => x(d['Country Name'])).y(d => y(+d[currentYear])))
                     .attr("stroke", "rgb(152, 199, 241)").style("stroke-width", 4).style("fill", "none");
@@ -242,9 +255,12 @@
                     .on("mouseout", function(d) {
                         div.transition().duration(500).style("opacity", 0);
                     });
+                
 
                 // function to update line chart based on year
                 function update(selectedGroup) {
+                    svg.selectAll("#my_annotations").remove();
+                    annotations = [];
                     var dataFilter = data.map(function(d){return {country: d['Country Name'], value: d[selectedGroup]}});
                     currentYear = selectedGroup;
                     document.getElementById("year").innerHTML = currentYear;
@@ -253,32 +269,48 @@
                         .attr("d", d3.line().x(function(d) { return x(d.country) }).y(function(d) { return y(+d.value)}));
                     dot.data(dataFilter).transition().duration(10)
                         .attr("cx", function(d) { return x(d.country) }).attr("cy", function(d) { return y(+d.value)});
+                    annotations = [
+                    {
+                        note: {
+                            label: "Each point represents a country",
+                            align: "middle",
+                            wrap: 200,
+                        },
+                        color: ["purple"],
+                        x: 250,
+                        y: 100
+                    }]
+                    makeAnnotations = d3.annotation().annotations(annotations);
+                        svg.append("g").attr("id", "my_annotations").call(makeAnnotations);
                 }
 
                 // once slider moves, update according to year
                 d3.select('#year-slider').on('change', function(d) {
-                    var selectedOption = d3.select(this).property("value");
+                    var selectedOption = parseInt(d3.select(this).property("value"));
+                    currentYear = selectedOption;
                     update(selectedOption);
                 });
 
                 // control the play/pause button and update chart accordingly
                 d3.select("#play-button").on("click", function() {
                     var button = d3.select(this);
-                    if (button.text() == "Pause") {
-                        moving = false;
-                        clearInterval(timer);
-                        button.text("Play");
-                    } else {
+                    if (button.text() != "Pause") {
                         moving = true;
                         timer = setInterval(step, 100);
                         button.text("Pause");
+                    } else {
+                        moving = false;
+                        clearInterval(timer);
+                        button.text("Play");
                     }
                 });
                 let playButton = d3.select("#play-button");
                 function step() {
+                    console.log(currentYear)
                     update(currentYear);
                     document.getElementById("year-slider").value = currentYear;
                     currentYear += 1;
+                    console.log(currentYear)
                     if (currentYear > targetYear) {
                         moving = false;
                         currentYear = 1960;
@@ -383,6 +415,16 @@
                         y: 5,
                         dy: 0,
                         dx: 50
+                    },
+                    {
+                        note: {
+                            label: "Notice how as the years pass by, more developed countries contribute to emissions",
+                            align: "left",
+                            wrap: 200
+                        },
+                        color: ["purple"],
+                        x: 400,
+                        y: 80
                     });
                     // Add annotation to the chart
                     makeAnnotations = d3.annotation().annotations(annotations);
