@@ -306,11 +306,9 @@
                 });
                 let playButton = d3.select("#play-button");
                 function step() {
-                    console.log(currentYear)
                     update(currentYear);
                     document.getElementById("year-slider").value = currentYear;
                     currentYear += 1;
-                    console.log(currentYear)
                     if (currentYear > targetYear) {
                         moving = false;
                         currentYear = 1960;
@@ -433,7 +431,8 @@
                     u.exit().remove();
                 }
                 d3.select('#year-slider-highest').on('change', function(d) {
-                    var selectedOption = d3.select(this).property("value");
+                    var selectedOption = parseInt(d3.select(this).property("value"));
+                    currentYear = selectedOption;
                     update(selectedOption);
                 });
                 d3.select("#play-button-highest").on("click", function() {
