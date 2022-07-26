@@ -231,8 +231,43 @@
                             wrap: 200,
                         },
                         color: ["purple"],
-                        x: 250,
+                        x: 450,
                         y: 100
+                    },
+                    {
+                        note: {
+                            label: "Watch Qatar",
+                            align: "left",
+                            wrap: 200,
+                        },
+                        color: ["purple"],
+                        x: 977,
+                        y: 285,
+                        dy: -50
+                    },
+                    {
+                        note: {
+                            label: "Look at Luxemborg's data",
+                            align: "middle",
+                            wrap: 200,
+                        },
+                        color: ["purple"],
+                        x: 705,
+                        y: 265,
+                        dx: 40,
+                        dy: -50
+                    },
+                    {
+                        note: {
+                            label: "Keep an eye out for UAE",
+                            align: "middle",
+                            wrap: 200,
+                        },
+                        color: ["purple"],
+                        x: 33,
+                        y: 325,
+                        dx: 50,
+                        dy: -50
                     }]
                 let makeAnnotations = d3.annotation().annotations(annotations);
                 svg.append("g").attr("id", "my_annotations").call(makeAnnotations);
@@ -272,13 +307,39 @@
                     annotations = [
                     {
                         note: {
-                            label: "Each point represents a country",
+                            label: "Qatar has the most noticeable change over the years as a result of liquefied natural gas",
                             align: "middle",
                             wrap: 200,
                         },
                         color: ["purple"],
-                        x: 250,
-                        y: 100
+                        x: 977,
+                        y: 200,
+                        dx: 0,
+                        dy: -50
+                    },
+                    {
+                        note: {
+                            label: "Luxembourg's emissions are caused by petrol and fuel tourism",
+                            align: "middle",
+                            wrap: 200,
+                        },
+                        color: ["purple"],
+                        x: 705,
+                        y: 260,
+                        dx: 0,
+                        dy: -50
+                    },
+                    {
+                        note: {
+                            label: "Energy production and consumption is the dominant source of emissions in the UAE",
+                            align: "middle",
+                            wrap: 200,
+                        },
+                        color: ["purple"],
+                        x: 55,
+                        y: 240,
+                        dx: 50,
+                        dy: -50
                     }]
                     makeAnnotations = d3.annotation().annotations(annotations);
                         svg.append("g").attr("id", "my_annotations").call(makeAnnotations);
